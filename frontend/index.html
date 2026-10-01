@@ -3,241 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mockup - Mapa e Notificações</title>
+    <title>Impactos do El Niño no Brasil</title>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            display: flex;
-            height: 100vh;
-            background-color: #f0f2f5;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            display: flex; 
+            height: 100vh; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f4f6f8; 
             color: #333;
-            overflow: hidden;
         }
 
-        /* Painel Esquerdo (Pesquisa e Mapa) */
-        .left-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 20px;
+        /* Área Principal */
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 20px; 
+            gap: 20px; 
         }
 
-        .search-container {
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: white; 
+            padding: 15px 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        }
+        
+        .title { 
+            font-size: 22px; 
+            font-weight: 700; 
+            color: #2c3e50; 
             display: flex;
             align-items: center;
-            background: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            z-index: 10; /* Para ficar acima do mapa se necessário */
+            gap: 10px;
         }
 
-        .search-container svg {
+        /* Toggle de Métricas */
+        .toggle-container { 
+            display: flex; 
+            background: #e9ecef; 
+            border-radius: 30px; 
+            padding: 5px; 
+        }
+        
+        .toggle-btn { 
+            border: none; 
+            background: transparent; 
+            padding: 10px 24px; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px;
             color: #666;
+            transition: all 0.3s ease; 
+        }
+        
+        .toggle-btn.active { 
+            background: #fff; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            color: #007bff; 
         }
 
-        .search-container input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 16px;
-            margin-left: 12px;
-            background: transparent;
-        }
-
-        .map-container {
-            flex: 1;
+        .map-container { 
+            flex: 1; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            z-index: 10; 
             background: #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            position: relative;
-            overflow: hidden;
         }
 
-        /* Painel Direito (Menu e Notificações) */
-        .right-panel {
-            width: 350px;
-            background: white;
-            border-left: 1px solid #eaeaea;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.05);
-            z-index: 20;
+        /* Painel Direito - Dashboard de Anomalias */
+        .sidebar { 
+            width: 380px; 
+            background: white; 
+            padding: 25px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            border-left: 1px solid #eaeaea; 
+            z-index: 20; 
+            box-shadow: -4px 0 15px rgba(0,0,0,0.03); 
+            overflow-y: auto; 
         }
 
-        .section-title {
-            font-size: 18px;
-            color: #1a1a1a;
-            margin-bottom: 15px;
-            font-weight: 600;
+        .section-title { 
+            font-size: 16px; 
+            font-weight: 700; 
+            margin-bottom: 12px; 
+            color: #1a1a1a; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .menu {
-            margin-bottom: 40px;
-        }
-
-        .menu ul {
-            list-style: none;
-        }
-
-        .menu li {
-            padding: 12px 15px;
-            margin-bottom: 8px;
+        .desc-text {
+            font-size: 14px; 
+            color: #666; 
+            margin-bottom: 25px; 
+            line-height: 1.6;
             background: #f8f9fa;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            color: #444;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #ccc;
         }
 
-        .menu li:hover {
-            background: #e9ecef;
-            transform: translateX(4px);
-            color: #0056b3;
+        /* Cards de Impacto */
+        .info-card { 
+            background: #fff; 
+            border: 1px solid #eee;
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 15px; 
+            border-left: 5px solid #ccc; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
         }
+        .info-card:hover { transform: translateY(-2px); }
 
-        /* Área de Notificações */
-        .notifications-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        .info-card.hotter { border-left-color: #e74c3c; }
+        .info-card.cooler { border-left-color: #3498db; }
+        .info-card.wetter { border-left-color: #2ecc71; }
+        .info-card.drier { border-left-color: #f39c12; }
 
-        .notifications-container {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-right: 5px;
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+            font-size: 12px; 
+            color: #888; 
+            font-weight: 600;
         }
-
-        /* Scrollbar customizada para as notificações */
-        .notifications-container::-webkit-scrollbar {
-            width: 6px;
+        
+        .card-value { 
+            font-size: 26px; 
+            font-weight: 800; 
+            color: #2c3e50; 
+            margin-bottom: 5px;
         }
-        .notifications-container::-webkit-scrollbar-track {
-            background: #f1f1f1; 
+        
+        .card-desc { 
+            font-size: 13px; 
+            color: #7f8c8d; 
+            background: #f8f9fa;
+            padding: 6px 8px;
             border-radius: 4px;
-        }
-        .notifications-container::-webkit-scrollbar-thumb {
-            background: #ccc; 
-            border-radius: 4px;
-        }
-        .notifications-container::-webkit-scrollbar-thumb:hover {
-            background: #aaa; 
-        }
-
-        .notification {
-            background: #fff;
-            border-left: 4px solid #007bff;
-            padding: 16px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            opacity: 0;
-            transform: translateX(100%);
-            border: 1px solid #f0f0f0;
-            border-left-width: 4px;
-        }
-
-        .notification.warning { border-left-color: #ffc107; }
-        .notification.error { border-left-color: #dc3545; }
-        .notification.success { border-left-color: #28a745; }
-
-        .notification-time {
-            font-size: 11px;
-            color: #888;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-time .dot {
-            height: 8px;
-            width: 8px;
-            background-color: #007bff;
-            border-radius: 50%;
             display: inline-block;
+            width: 100%;
         }
 
-        .notification.warning .dot { background-color: #ffc107; }
-        .notification.error .dot { background-color: #dc3545; }
-        .notification.success .dot { background-color: #28a745; }
-
-        .notification p {
-            font-size: 14px;
-            line-height: 1.4;
-            color: #333;
+        /* Legenda */
+        .legend { 
+            margin-top: auto; 
+            padding-top: 20px; 
+            border-top: 1px solid #eaeaea; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        
+        .legend-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px; 
+            color: #444;
+            font-weight: 500;
+        }
+        
+        .legend-color { 
+            width: 18px; 
+            height: 18px; 
+            border-radius: 50%; 
         }
 
-        @keyframes slideIn {
-            to { transform: translateX(0); opacity: 1; }
-        }
-
+        /* Scrollbar Sidebar */
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .sidebar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
     </style>
-    <!-- Adicionando Leaflet para um mapa funcional de mockup -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 
-    <div class="left-panel">
-        <div class="search-container">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" placeholder="Pesquisar locais, eventos ou relatórios...">
+    <div class="main-content">
+        <div class="header">
+            <div class="title">
+                🌍 Mapa de Impactos do El Niño 
+            </div>
+            <div class="toggle-container">
+                <button class="toggle-btn active" onclick="setMetric('temperature')" id="btn-temp">🌡️ Temperatura</button>
+                <button class="toggle-btn" onclick="setMetric('rainfall')" id="btn-rain">🌧️ Precipitação</button>
+            </div>
+        </div>
+        <div id="map" class="map-container"></div>
+    </div>
+    
+    <div class="sidebar">
+        <div class="section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            Visão Geral
+        </div>
+        <div class="desc-text">
+            Comparação climática entre o <b>El Niño (Jun 2023 a Mai 2024)</b> e a média dos 10 períodos anuais anteriores.<br><br>
+            <i>Dados extraídos da Open-Meteo (modelo ERA5).</i>
         </div>
         
-        <div class="map-container" id="map">
-            <!-- O Mapa Leaflet será renderizado aqui -->
+        <div class="section-title" id="ranking-title">
+            📍 Principais Anomalias
         </div>
-    </div>
-
-    <div class="right-panel">
-        <div class="menu">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                Menu Principal
-            </div>
-            <ul>
-                <li>📊 Dashboard</li>
-                <li>📍 Meus Pontos</li>
-                <li>⚙️ Configurações</li>
-                <li>👤 Meu Perfil</li>
-            </ul>
+        <div id="ranking-container">
+            <!-- Cards gerados pelo Javascript -->
         </div>
-
-        <div class="notifications-wrapper">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                Notificações Recentes
-            </div>
-            <div class="notifications-container" id="notifications">
-                <!-- As notificações mockadas aparecerão aqui -->
-            </div>
+        
+        <div class="legend">
+            <div class="section-title" style="margin-bottom: 0;">Legenda do Mapa</div>
+            <div class="legend-item"><div class="legend-color" style="background: #e74c3c; opacity: 0.8;"></div> Mais Quente (Anomalia +)</div>
+            <div class="legend-item"><div class="legend-color" style="background: #3498db; opacity: 0.8;"></div> Mais Frio (Anomalia -)</div>
+            <div class="legend-item"><div class="legend-color" style="background: #2ecc71; opacity: 0.8;"></div> Mais Chuvoso (Anomalia +)</div>
+            <div class="legend-item"><div class="legend-color" style="background: #f39c12; opacity: 0.8;"></div> Mais Seco (Anomalia -)</div>
+            <small style="color:#888; font-size: 12px; margin-top:5px; line-height: 1.4;">
+                * O tamanho do círculo indica a intensidade relativa (0 a 1) da anomalia no mapa de calor.
+            </small>
         </div>
     </div>
 
     <script>
-        // Inicializar o Mapa (Mockando São Paulo)
-        const map = L.map('map', { zoomControl: false }).setView([-23.5505, -46.6333], 13); 
+        // Inicializa o mapa focado no Brasil
+        const map = L.map('map', { zoomControl: false }).setView([-14.2350, -51.9253], 4);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -245,53 +245,139 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Adicionar alguns marcadores mockados
-        const markers = [
-            { pos: [-23.5505, -46.6333], text: "Centro" },
-            { pos: [-23.5615, -46.6560], text: "Avenida Paulista" },
-            { pos: [-23.5874, -46.6576], text: "Parque Ibirapuera" }
-        ];
+        let layerGroup = L.layerGroup().addTo(map);
 
-        markers.forEach(m => {
-            L.marker(m.pos).addTo(map).bindPopup(`<b>${m.text}</b><br>Alerta registrado.`);
-        });
+        // Dados Mockados para prototipagem visual caso a API local (Java) esteja offline
+        const mockData = {
+            temperature: {
+                points: [
+                    { latitude: -15.7801, longitude: -47.9292, currentValue: 26.5, historicalValue: 24.0, anomaly: 2.5, intensity: 1.0, direction: 'HOTTER' },
+                    { latitude: -23.5505, longitude: -46.6333, currentValue: 24.1, historicalValue: 22.0, anomaly: 2.1, intensity: 0.84, direction: 'HOTTER' },
+                    { latitude: -3.1190, longitude: -60.0217, currentValue: 29.5, historicalValue: 28.0, anomaly: 1.5, intensity: 0.6, direction: 'HOTTER' },
+                    { latitude: -30.0346, longitude: -51.2177, currentValue: 17.5, historicalValue: 18.0, anomaly: -0.5, intensity: 0.2, direction: 'COOLER' }
+                ]
+            },
+            rainfall: {
+                points: [
+                    { latitude: -30.0346, longitude: -51.2177, currentValue: 2100, historicalValue: 1500, anomaly: 600, intensity: 1.0, direction: 'WETTER' },
+                    { latitude: -27.5954, longitude: -48.5480, currentValue: 1800, historicalValue: 1400, anomaly: 400, intensity: 0.66, direction: 'WETTER' },
+                    { latitude: -3.7172, longitude: -38.5430, currentValue: 600, historicalValue: 1000, anomaly: -400, intensity: 0.66, direction: 'DRIER' },
+                    { latitude: -1.4558, longitude: -48.5044, currentValue: 2500, historicalValue: 3000, anomaly: -500, intensity: 0.83, direction: 'DRIER' }
+                ]
+            }
+        };
 
-        // Notificações Mockadas
-        const mockNotifications = [
-            { type: 'info', message: 'Novo usuário registrado na sua área de monitoramento.', time: 'Há 2 min' },
-            { type: 'warning', message: 'Alerta de evento suspeito próximo à Avenida Paulista.', time: 'Há 15 min' },
-            { type: 'success', message: 'O relatório do evento #402 foi aprovado.', time: 'Há 1 hora' },
-            { type: 'error', message: 'Falha de sincronização com o banco de dados.', time: 'Há 3 horas' }
-        ];
-
-        const notificationsContainer = document.getElementById('notifications');
-
-        function createNotificationElement(notif, delay = 0) {
-            const notifEl = document.createElement('div');
-            notifEl.className = `notification ${notif.type}`;
-            notifEl.style.animationDelay = `${delay}s`;
-            notifEl.innerHTML = `
-                <div class="notification-time">
-                    <span>${notif.time}</span>
-                    <span class="dot"></span>
-                </div>
-                <p>${notif.message}</p>
-            `;
-            return notifEl;
+        function getMarkerConfig(direction) {
+            switch(direction) {
+                case 'HOTTER': return { color: '#e74c3c' };
+                case 'COOLER': return { color: '#3498db' };
+                case 'WETTER': return { color: '#2ecc71' };
+                case 'DRIER':  return { color: '#f39c12' };
+                default: return { color: '#95a5a6' };
+            }
         }
 
-        // Renderizar notificações iniciais
-        mockNotifications.forEach((notif, index) => {
-            const el = createNotificationElement(notif, index * 0.1);
-            notificationsContainer.appendChild(el);
-        });
-        
-        // Simular a chegada de uma NOVA notificação pop-up após 3 segundos
-        setTimeout(() => {
-            const newNotif = { type: 'info', message: '🚨 Nova ocorrência reportada na sua região!', time: 'Agora mesmo' };
-            const el = createNotificationElement(newNotif, 0);
-            notificationsContainer.insertBefore(el, notificationsContainer.firstChild);
-        }, 3000);
+        // Renderiza as bolhas no mapa
+        function renderMap(points, metric) {
+            layerGroup.clearLayers();
+            
+            points.forEach(p => {
+                const config = getMarkerConfig(p.direction);
+                // Calcula o raio baseando-se na intensidade (de 0 a 1)
+                const radius = 8 + (p.intensity * 25); 
+                
+                const marker = L.circleMarker([p.latitude, p.longitude], {
+                    radius: radius,
+                    fillColor: config.color,
+                    color: config.color,
+                    weight: 2,
+                    opacity: 0.9,
+                    fillOpacity: 0.6
+                });
+                
+                const unit = metric === 'temperature' ? '°C' : (metric === 'rainfall' ? 'mm' : '');
+                const formattedAnomaly = (p.anomaly > 0 ? '+' : '') + p.anomaly.toFixed(2);
+                
+                marker.bindPopup(`
+                    <div style="font-family: 'Segoe UI', sans-serif;">
+                        <h4 style="margin: 0 0 8px 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                            ${p.direction}
+                        </h4>
+                        <b>Anomalia:</b> <span style="color: ${config.color}; font-weight: bold;">${formattedAnomaly}${unit}</span><br>
+                        <b>Atual:</b> ${p.currentValue.toFixed(1)}${unit}<br>
+                        <b>Histórico:</b> ${p.historicalValue.toFixed(1)}${unit}<br>
+                        <small style="color: #888;">Lat: ${p.latitude.toFixed(2)} | Lon: ${p.longitude.toFixed(2)}</small>
+                    </div>
+                `);
+                
+                marker.addTo(layerGroup);
+            });
+            
+            renderSidebar(points, metric);
+        }
+
+        // Renderiza os Cards de Dashboard
+        function renderSidebar(points, metric) {
+            const container = document.getElementById('ranking-container');
+            container.innerHTML = '';
+            
+            // Ordena pela maior anomalia absoluta para destacar os mais impactados
+            const sorted = [...points].sort((a, b) => Math.abs(b.anomaly) - Math.abs(a.anomaly)).slice(0, 4);
+            const unit = metric === 'temperature' ? '°C' : (metric === 'rainfall' ? 'mm' : '');
+
+            if (sorted.length === 0) {
+                container.innerHTML = '<p style="color: #888; font-size: 14px;">Nenhum dado encontrado para esta métrica.</p>';
+            }
+
+            sorted.forEach(p => {
+                const card = document.createElement('div');
+                card.className = `info-card ${p.direction.toLowerCase()}`;
+                
+                const formattedAnomaly = (p.anomaly > 0 ? '+' : '') + p.anomaly.toFixed(1);
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span>Ponto Geográfico (Lat: ${p.latitude.toFixed(1)})</span>
+                        <strong style="color: #555;">${p.direction}</strong>
+                    </div>
+                    <div class="card-value">${formattedAnomaly}${unit}</div>
+                    <div class="card-desc">
+                        <b>Atual:</b> ${p.currentValue.toFixed(1)}${unit} &nbsp;|&nbsp; 
+                        <b>Histórico:</b> ${p.historicalValue.toFixed(1)}${unit}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Função principal que orquestra o carregamento dos dados da API Java do El Niño
+        async function loadData(metric) {
+            try {
+                // Tenta consumir a API Spring Boot mapeada no README (http://localhost:8080/api/impacts)
+                const res = await fetch(`http://localhost:8080/api/impacts?metric=${metric}`);
+                if (!res.ok) throw new Error('Backend não retornou 200 OK');
+                
+                const data = await res.json();
+                console.log("Dados reais carregados:", data);
+                renderMap(data.points, metric);
+            } catch(e) {
+                console.warn("Backend local (porta 8080) parece estar indisponível. Usando dados mockados como fallback para renderização.", e);
+                // Fallback elegante para o mockup continuar operante mesmo se o backend do Hackathon não estiver rodando
+                if(mockData[metric] && mockData[metric].points) {
+                    renderMap(mockData[metric].points, metric);
+                }
+            }
+        }
+
+        // Gerencia a troca de métricas pelo menu toggle
+        function setMetric(metric) {
+            document.getElementById('btn-temp').className = `toggle-btn ${metric === 'temperature' ? 'active' : ''}`;
+            document.getElementById('btn-rain').className = `toggle-btn ${metric === 'rainfall' ? 'active' : ''}`;
+            loadData(metric);
+        }
+
+        // Inicialização padrão
+        setMetric('temperature');
     </script>
 </body>
 </html>
