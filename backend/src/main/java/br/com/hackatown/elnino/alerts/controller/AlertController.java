@@ -13,6 +13,6 @@ public class AlertController {
     }
 
     public AlertResponse createFloodAlert(AlertRequest request) {
-        return telegramAlertService.prepareFloodRiskAlert(request);
+        return telegramAlertService.send(request);
     }
 }

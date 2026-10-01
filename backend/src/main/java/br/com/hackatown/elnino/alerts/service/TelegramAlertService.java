@@ -10,7 +10,7 @@ public class TelegramAlertService {
         this.telegramBotClient = telegramBotClient;
     }
 
-    public AlertResponse prepareFloodRiskAlert(AlertRequest request) {
+    public AlertResponse send(AlertRequest request) {
         validate(request);
         String message = String.format(
                 "%s ALERT: flood risk in %s. Avoid flooded areas and seek a safe location.",

@@ -14,14 +14,26 @@ public final class EnvironmentConfig {
     }
 
     public static String required(String name) {
-        String value = System.getenv(name);
-        if (value == null || value.isBlank()) {
-            value = DOT_ENV_VALUES.get(name);
-        }
+        String value = value(name);
         if (value == null || value.isBlank()) {
             throw new IllegalStateException("Configuration value " + name + " is required.");
         }
         return value;
+    }
+
+    public static String valueOrDefault(String name, String defaultValue) {
+        String value = value(name);
+        return value == null || value.isBlank() ? defaultValue : value;
+    }
+
+    public static double doubleValueOrDefault(String name, double defaultValue) {
+        String value = value(name);
+        return value == null || value.isBlank() ? defaultValue : Double.parseDouble(value);
+    }
+
+    private static String value(String name) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? DOT_ENV_VALUES.get(name) : value;
     }
 
     private static Map<String, String> loadDotEnv() {
