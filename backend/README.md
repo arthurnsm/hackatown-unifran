@@ -90,3 +90,7 @@ mvn -Dmaven.repo.local=/tmp/hackatown-m2 compile && java -cp target/classes br.c
 ```
 
 Em modo de teste, o backend verifica a previsão a cada 10 segundos. Sem risco, não envia nada. Os limites atuais são 30 mm de chuva e 20 °C, configuráveis com `HEAVY_RAIN_MM` e `EXTREME_HEAT_C`. Enquanto o cadastro não existe, use `ALERT_CITY`, `ALERT_STATE`, `ALERT_LATITUDE` e `ALERT_LONGITUDE` para definir o local monitorado. O padrão atual é Salvador, BA.
+
+## Cadastro de alertas
+
+O frontend deve enviar `POST /api/alert-subscriptions` com `chatId`, `city`, `state`, `latitude` e `longitude`. Os cadastros ficam em `backend/data/alert-subscribers.json`, que não é versionado.
