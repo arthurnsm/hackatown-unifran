@@ -1,8 +1,8 @@
-package br.com.hackatown.alerts.controller;
+package br.com.hackatown.elnino.alerts.controller;
 
-import br.com.hackatown.alerts.model.AlertRequest;
-import br.com.hackatown.alerts.model.AlertResponse;
-import br.com.hackatown.alerts.service.SmsAlertService;
+import br.com.hackatown.elnino.alerts.model.AlertRequest;
+import br.com.hackatown.elnino.alerts.model.AlertResponse;
+import br.com.hackatown.elnino.alerts.service.SmsAlertService;
 import java.util.Objects;
 
 public class AlertController {

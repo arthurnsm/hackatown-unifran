@@ -1,7 +1,7 @@
-package br.com.hackatown.alerts.service;
+package br.com.hackatown.elnino.alerts.service;
 
-import br.com.hackatown.alerts.model.AlertRequest;
-import br.com.hackatown.alerts.model.AlertResponse;
+import br.com.hackatown.elnino.alerts.model.AlertRequest;
+import br.com.hackatown.elnino.alerts.model.AlertResponse;
 
 public class SmsAlertService {
     private final TwilioSmsClient twilioSmsClient;

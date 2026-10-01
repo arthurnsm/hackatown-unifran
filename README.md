@@ -21,12 +21,11 @@ export TWILIO_AUTH_TOKEN='...'
 export TWILIO_FROM_NUMBER='+15551234567'
 ```
 
-`TWILIO_FROM_NUMBER` must be an SMS-capable sender owned by the Twilio account. Then compile and run:
+`TWILIO_FROM_NUMBER` deve ser um remetente habilitado para SMS na conta Twilio. Contas de teste só enviam para números de destino verificados. O SMS aceita telefones brasileiros em formato internacional, por exemplo `+5511999999999`.
+
+Para executar apenas a demonstração de SMS após configurar as variáveis:
 
 ```bash
-build_dir=$(mktemp -d)
-javac -d "$build_dir" $(find src/main/java -name '*.java')
-java -cp "$build_dir" br.com.hackatown.alerts.AlertApplication
+javac -d /tmp/hackatown-alerts $(find src/main/java -name '*.java')
+java -cp /tmp/hackatown-alerts br.com.hackatown.elnino.alerts.AlertApplication
 ```
-
-The console prints the Twilio Message SID once Twilio accepts the request for delivery. A trial account can send only to verified recipient numbers.

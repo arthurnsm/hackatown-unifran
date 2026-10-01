@@ -1,4 +1,4 @@
-package br.com.hackatown.alerts.model;
+package br.com.hackatown.elnino.alerts.model;
 
 public class AlertResponse {
     private final String phoneNumber;

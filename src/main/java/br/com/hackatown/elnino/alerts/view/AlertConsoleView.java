@@ -1,6 +1,6 @@
-package br.com.hackatown.alerts.view;
+package br.com.hackatown.elnino.alerts.view;
 
-import br.com.hackatown.alerts.model.AlertResponse;
+import br.com.hackatown.elnino.alerts.model.AlertResponse;
 
 public class AlertConsoleView {
     public void render(AlertResponse response) {

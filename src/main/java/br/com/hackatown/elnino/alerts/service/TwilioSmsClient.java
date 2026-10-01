@@ -1,4 +1,4 @@
-package br.com.hackatown.alerts.service;
+package br.com.hackatown.elnino.alerts.service;
 
 import java.io.IOException;
 import java.net.URI;
