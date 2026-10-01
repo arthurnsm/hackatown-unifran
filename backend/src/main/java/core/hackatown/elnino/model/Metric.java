@@ -1,4 +1,4 @@
-package br.com.hackatown.elnino.model;
+package core.hackatown.elnino.model;
 
 import java.util.Locale;
 

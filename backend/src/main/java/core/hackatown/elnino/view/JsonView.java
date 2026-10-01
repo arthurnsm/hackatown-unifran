@@ -1,4 +1,4 @@
-package br.com.hackatown.elnino.view;
+package core.hackatown.elnino.view;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;

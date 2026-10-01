@@ -49,7 +49,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <mainClass>br.com.hackatown.elnino.Main</mainClass>
+                    <mainClass>core.hackatown.elnino.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,9 +1,9 @@
-package br.com.hackatown.elnino.service;
+package core.hackatown.elnino.service;
 
-import br.com.hackatown.elnino.model.DailyWeather;
-import br.com.hackatown.elnino.model.ImpactPoint;
-import br.com.hackatown.elnino.model.Location;
-import br.com.hackatown.elnino.model.Metric;
+import core.hackatown.elnino.model.DailyWeather;
+import core.hackatown.elnino.model.ImpactPoint;
+import core.hackatown.elnino.model.Location;
+import core.hackatown.elnino.model.Metric;
 
 import java.util.ArrayList;
 import java.util.Comparator;

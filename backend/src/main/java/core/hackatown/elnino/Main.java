@@ -1,10 +1,10 @@
-package br.com.hackatown.elnino;
+package core.hackatown.elnino;
 
-import br.com.hackatown.elnino.client.OpenMeteoClient;
-import br.com.hackatown.elnino.controller.ImpactController;
-import br.com.hackatown.elnino.service.ImpactCalculator;
-import br.com.hackatown.elnino.service.ImpactService;
-import br.com.hackatown.elnino.view.JsonView;
+import core.hackatown.elnino.client.OpenMeteoClient;
+import core.hackatown.elnino.controller.ImpactController;
+import core.hackatown.elnino.service.ImpactCalculator;
+import core.hackatown.elnino.service.ImpactService;
+import core.hackatown.elnino.view.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 

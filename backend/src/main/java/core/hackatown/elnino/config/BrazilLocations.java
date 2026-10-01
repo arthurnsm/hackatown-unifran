@@ -1,6 +1,6 @@
-package br.com.hackatown.elnino.config;
+package core.hackatown.elnino.config;
 
-import br.com.hackatown.elnino.model.Location;
+import core.hackatown.elnino.model.Location;
 
 import java.util.List;
 

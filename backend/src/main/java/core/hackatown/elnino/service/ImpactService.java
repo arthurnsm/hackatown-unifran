@@ -1,11 +1,11 @@
-package br.com.hackatown.elnino.service;
+package core.hackatown.elnino.service;
 
-import br.com.hackatown.elnino.client.OpenMeteoClient;
-import br.com.hackatown.elnino.config.BrazilLocations;
-import br.com.hackatown.elnino.model.DailyWeather;
-import br.com.hackatown.elnino.model.ImpactResponse;
-import br.com.hackatown.elnino.model.Location;
-import br.com.hackatown.elnino.model.Metric;
+import core.hackatown.elnino.client.OpenMeteoClient;
+import core.hackatown.elnino.config.BrazilLocations;
+import core.hackatown.elnino.model.DailyWeather;
+import core.hackatown.elnino.model.ImpactResponse;
+import core.hackatown.elnino.model.Location;
+import core.hackatown.elnino.model.Metric;
 
 import java.io.IOException;
 import java.time.Duration;

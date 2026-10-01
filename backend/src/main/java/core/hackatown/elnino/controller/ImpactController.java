@@ -1,8 +1,8 @@
-package br.com.hackatown.elnino.controller;
+package core.hackatown.elnino.controller;
 
-import br.com.hackatown.elnino.model.Metric;
-import br.com.hackatown.elnino.service.ImpactService;
-import br.com.hackatown.elnino.view.JsonView;
+import core.hackatown.elnino.model.Metric;
+import core.hackatown.elnino.service.ImpactService;
+import core.hackatown.elnino.view.JsonView;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 

@@ -1,7 +1,7 @@
-package br.com.hackatown.elnino.client;
+package core.hackatown.elnino.client;
 
-import br.com.hackatown.elnino.model.DailyWeather;
-import br.com.hackatown.elnino.model.Location;
+import core.hackatown.elnino.model.DailyWeather;
+import core.hackatown.elnino.model.Location;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
