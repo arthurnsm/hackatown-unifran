@@ -71,3 +71,20 @@ carregarMapa("temperature");
 - Intensidade: valor absoluto da anomalia dividido pela maior anomalia entre as 59 amostras nacionais.
 
 Os valores representam anomalias da data atual e não provam causalidade isolada do El Niño.
+
+## Alerta de enchente via Telegram
+
+O módulo de alertas segue MVC: `model` representa o pedido e a resposta, `controller` coordena o envio, `service` valida e monta a mensagem, e `view` exibe o resultado. O cliente Telegram realiza a integração externa.
+
+Defina estas variáveis de ambiente — ou acrescente-as ao arquivo `backend/.env`, que é ignorado pelo Git:
+
+```bash
+export TELEGRAM_BOT_TOKEN='token-fornecido-pelo-BotFather'
+export TELEGRAM_CHAT_ID='id-do-chat-que-recebe-o-alerta'
+```
+
+O usuário precisa abrir uma conversa com o bot e enviar `/start` antes de receber alertas. Para executar a demonstração:
+
+```bash
+mvn -Dmaven.repo.local=/tmp/hackatown-m2 compile && java -cp target/classes br.com.hackatown.elnino.alerts.AlertApplication
+```

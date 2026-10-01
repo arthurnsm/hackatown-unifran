@@ -3,29 +3,25 @@ package br.com.hackatown.elnino.alerts.service;
 import br.com.hackatown.elnino.alerts.model.AlertRequest;
 import br.com.hackatown.elnino.alerts.model.AlertResponse;
 
-public class SmsAlertService {
-    private final TwilioSmsClient twilioSmsClient;
+public class TelegramAlertService {
+    private final TelegramBotClient telegramBotClient;
 
-    public SmsAlertService(TwilioSmsClient twilioSmsClient) {
-        this.twilioSmsClient = twilioSmsClient;
+    public TelegramAlertService(TelegramBotClient telegramBotClient) {
+        this.telegramBotClient = telegramBotClient;
     }
 
     public AlertResponse prepareFloodRiskAlert(AlertRequest request) {
         validate(request);
-
         String message = String.format(
                 "%s ALERT: flood risk in %s. Avoid flooded areas and seek a safe location.",
                 request.getRiskLevel().toUpperCase(), request.getLocation());
-
-        String phoneNumber = validatePhoneNumber(request.getPhoneNumber());
-        String messageSid = twilioSmsClient.send(phoneNumber, message);
-        return new AlertResponse(phoneNumber, message, messageSid);
+        String chatId = validateChatId(request.getChatId());
+        String messageId = telegramBotClient.send(chatId, message);
+        return new AlertResponse(chatId, message, messageId);
     }
 
     private void validate(AlertRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Alert request is required");
-        }
+        if (request == null) throw new IllegalArgumentException("Alert request is required");
         if (request.getLocation() == null || request.getLocation().isBlank()) {
             throw new IllegalArgumentException("Location is required");
         }
@@ -34,10 +30,8 @@ public class SmsAlertService {
         }
     }
 
-    private String validatePhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || !phoneNumber.matches("^\\+55\\d{10,11}$")) {
-            throw new IllegalArgumentException("Phone number must use the format +5511999999999");
-        }
-        return phoneNumber;
+    private String validateChatId(String chatId) {
+        if (chatId == null || chatId.isBlank()) throw new IllegalArgumentException("Telegram chat ID is required");
+        return chatId;
     }
 }
