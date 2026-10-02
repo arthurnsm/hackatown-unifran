@@ -28,6 +28,7 @@ class ImpactCalculatorTest {
         assertEquals(25, point.currentValue());
         assertEquals(21, point.historicalValue());
         assertEquals(4, point.anomaly());
+        assertEquals(4, point.absoluteChange());
         assertEquals(1, point.intensity());
         assertEquals("HOTTER", point.direction());
     }
@@ -44,7 +45,23 @@ class ImpactCalculatorTest {
         assertEquals(150, point.currentValue());
         assertEquals(100, point.historicalValue());
         assertEquals(50, point.anomaly());
+        assertEquals(50, point.absoluteChange());
+        assertEquals(true, point.percentageReliable());
         assertEquals("WETTER", point.direction());
+    }
+
+    @Test
+    void marksRainPercentageAsUnreliableWhenReferenceIsAlmostZero() {
+        ImpactPoint point = calculator.calculate(
+                Metric.RAINFALL,
+                Map.of(city, List.of(day(20, 2))),
+                Map.of(city, List.of(day(20, 0.1), day(20, 0.1), day(20, 0.1))),
+                3
+        ).get(0);
+
+        assertEquals(1900, point.anomaly());
+        assertEquals(1.9, point.absoluteChange());
+        assertEquals(false, point.percentageReliable());
     }
 
     private DailyWeather day(double temperature, double rain) {

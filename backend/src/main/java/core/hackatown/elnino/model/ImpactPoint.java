@@ -9,6 +9,8 @@ public record ImpactPoint(
         double currentValue,
         double historicalValue,
         double anomaly,
+        double absoluteChange,
+        boolean percentageReliable,
         double intensity,
         String direction
 ) {

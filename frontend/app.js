@@ -24,8 +24,8 @@ const mockData = {
         { city: 'Manaus', id: 'AM', latitude: -3.12, longitude: -60.02, currentValue: 29.5, historicalValue: 28, anomaly: 1.5, intensity: .6, direction: 'HOTTER' }
     ]},
     rainfall: { points: [
-        { city: 'Porto Alegre', id: 'RS', latitude: -30.03, longitude: -51.22, currentValue: 2100, historicalValue: 1500, anomaly: 40, intensity: 1, direction: 'WETTER' },
-        { city: 'Florianópolis', id: 'SC', latitude: -27.59, longitude: -48.55, currentValue: 1800, historicalValue: 1400, anomaly: 28.6, intensity: .7, direction: 'WETTER' }
+        { city: 'Porto Alegre', id: 'RS', latitude: -30.03, longitude: -51.22, currentValue: 80, historicalValue: 50, anomaly: 60, absoluteChange: 30, percentageReliable: true, intensity: 1, direction: 'WETTER' },
+        { city: 'Florianópolis', id: 'SC', latitude: -27.59, longitude: -48.55, currentValue: 55, historicalValue: 40, anomaly: 37.5, absoluteChange: 15, percentageReliable: true, intensity: .5, direction: 'WETTER' }
     ]}
 };
 
@@ -33,6 +33,22 @@ function unitsFor(metric) {
     return metric === 'temperature'
         ? { anomaly: '°C', value: '°C' }
         : { anomaly: '%', value: ' mm' };
+}
+
+function anomalyDisplay(point, metric, digits = 1) {
+    if (metric === 'temperature') return `${signed(point.anomaly, digits)}°C`;
+
+    const millimeters = `${signed(point.absoluteChange, digits)} mm`;
+    return point.percentageReliable
+        ? `${millimeters} (${signed(point.anomaly, digits)}%)`
+        : millimeters;
+}
+
+function anomalyContext(point, metric) {
+    if (metric === 'rainfall' && !point.percentageReliable) {
+        return 'percentual omitido: referência histórica próxima de zero';
+    }
+    return `${directionLabel(point.direction)} que a referência histórica`;
 }
 
 function colorFor(direction) {
@@ -94,7 +110,8 @@ function renderMap(points, metric) {
             <div style="font-family:Inter,sans-serif;min-width:180px;color:#12231c">
                 <strong style="display:block;font-size:15px;margin-bottom:3px">${placeName(point)}</strong>
                 <span style="color:#66736d;font-size:12px">${directionLabel(point.direction)}</span>
-                <div style="font-size:24px;font-weight:750;color:${color};margin:10px 0">${signed(point.anomaly)}${units.anomaly}</div>
+                <div style="font-size:24px;font-weight:750;color:${color};margin:10px 0">${anomalyDisplay(point, metric)}</div>
+                <div style="color:#66736d;font-size:11px;margin:-6px 0 8px">${anomalyContext(point, metric)}</div>
                 <div style="font-size:12px;line-height:1.6">Últimos 7 dias: <b>${Number(point.currentValue).toFixed(1)}${units.value}</b><br>Média das mesmas janelas: <b>${Number(point.historicalValue).toFixed(1)}${units.value}</b></div>
             </div>
         `);
@@ -105,7 +122,10 @@ function renderMap(points, metric) {
 }
 
 function renderInsights(points, metric) {
-    const sorted = [...points].sort((a, b) => Math.abs(b.anomaly) - Math.abs(a.anomaly));
+    const magnitude = point => Math.abs(
+        metric === 'rainfall' ? Number(point.absoluteChange || 0) : Number(point.anomaly || 0)
+    );
+    const sorted = [...points].sort((a, b) => magnitude(b) - magnitude(a));
     const units = unitsFor(metric);
     const highlight = sorted[0];
     const highlightPanel = document.getElementById('highlight-panel');
@@ -121,8 +141,8 @@ function renderInsights(points, metric) {
     highlightPanel.innerHTML = `
         <p class="eyebrow">Maior impacto observado</p>
         <h2 class="highlight-place">${placeName(highlight)}</h2>
-        <div class="highlight-value" style="color:${color}">${signed(highlight.anomaly, 2)}${units.anomaly}</div>
-        <div class="highlight-direction">${directionLabel(highlight.direction)} que a referência histórica</div>
+        <div class="highlight-value" style="color:${color}">${anomalyDisplay(highlight, metric, 1)}</div>
+        <div class="highlight-direction">${anomalyContext(highlight, metric)}</div>
         <div class="comparison">
             <div class="stat"><span>Últimos 7 dias</span><strong>${Number(highlight.currentValue).toFixed(1)}${units.value}</strong></div>
             <div class="stat"><span>Janelas anteriores · média</span><strong>${Number(highlight.historicalValue).toFixed(1)}${units.value}</strong></div>
@@ -133,7 +153,7 @@ function renderInsights(points, metric) {
         <div class="ranking-row">
             <span class="rank">0${index + 2}</span>
             <div class="ranking-place"><strong>${placeName(point)}</strong><span>${directionLabel(point.direction)}</span></div>
-            <span class="ranking-value" style="color:${colorFor(point.direction)}">${signed(point.anomaly)}${units.anomaly}</span>
+            <span class="ranking-value" style="color:${colorFor(point.direction)}">${anomalyDisplay(point, metric)}</span>
         </div>
     `).join('');
 }
@@ -145,7 +165,7 @@ function updateMetricCopy(metric) {
     document.getElementById('map-title').textContent = temperature ? 'Anomalia de temperatura' : 'Anomalia de precipitação';
     document.getElementById('map-description').textContent = temperature
         ? 'Interpolação de 59 amostras da diferença de temperatura em relação ao histórico.'
-        : 'Interpolação de 59 amostras da variação percentual de chuva.';
+        : 'Interpolação de 59 amostras da diferença de chuva acumulada em milímetros.';
     document.getElementById('legend-scale').classList.toggle('rainfall', !temperature);
     document.getElementById('legend-start').textContent = temperature ? 'Mais frio' : 'Mais seco';
     document.getElementById('legend-end').textContent = temperature ? 'Mais quente' : 'Mais chuvoso';

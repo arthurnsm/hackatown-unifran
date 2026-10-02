@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class ImpactCalculator {
+    private static final double MIN_RAIN_REFERENCE_MM = 5.0;
+
     public List<ImpactPoint> calculate(
             Metric metric,
             Map<Location, List<DailyWeather>> eventData,
@@ -35,10 +37,14 @@ public final class ImpactCalculator {
             double anomaly = metric == Metric.TEMPERATURE
                     ? eventValue - historicalValue
                     : percentageDifference(eventValue, historicalValue);
-            raw.add(new RawImpact(location, eventValue, historicalValue, anomaly));
+            double absoluteChange = eventValue - historicalValue;
+            raw.add(new RawImpact(location, eventValue, historicalValue, anomaly, absoluteChange));
         });
 
-        double maxMagnitude = raw.stream().mapToDouble(item -> Math.abs(item.anomaly())).max().orElse(1.0);
+        double maxMagnitude = raw.stream()
+                .mapToDouble(item -> magnitude(metric, item))
+                .max()
+                .orElse(1.0);
         if (maxMagnitude == 0) maxMagnitude = 1.0;
 
         final double scale = maxMagnitude;
@@ -54,9 +60,15 @@ public final class ImpactCalculator {
                 location.id(), location.city(), location.state(),
                 location.latitude(), location.longitude(),
                 round(item.eventValue()), round(item.historicalValue()), round(item.anomaly()),
-                round(Math.abs(item.anomaly()) / maxMagnitude),
+                round(item.absoluteChange()),
+                metric != Metric.RAINFALL || item.historicalValue() >= MIN_RAIN_REFERENCE_MM,
+                round(magnitude(metric, item) / maxMagnitude),
                 direction(metric, item.anomaly())
         );
+    }
+
+    private double magnitude(Metric metric, RawImpact item) {
+        return Math.abs(metric == Metric.RAINFALL ? item.absoluteChange() : item.anomaly());
     }
 
     private String direction(Metric metric, double anomaly) {
@@ -72,6 +84,12 @@ public final class ImpactCalculator {
         return Math.round(number * 100.0) / 100.0;
     }
 
-    private record RawImpact(Location location, double eventValue, double historicalValue, double anomaly) {
+    private record RawImpact(
+            Location location,
+            double eventValue,
+            double historicalValue,
+            double anomaly,
+            double absoluteChange
+    ) {
     }
 }

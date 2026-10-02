@@ -44,6 +44,8 @@ Cada ponto contém:
 - `latitude` e `longitude`: posição no mapa;
 - `currentValue`: temperatura média ou chuva acumulada nos últimos sete dias;
 - `historicalValue`: média das mesmas janelas nos três anos anteriores;
+- `absoluteChange`: diferença absoluta; em chuva, evita distorções quando a referência está próxima de zero;
+- `percentageReliable`: indica se a referência semanal de chuva é de pelo menos 5 mm e o percentual pode ser exibido;
 - `anomaly`: diferença em °C ou em porcentagem de chuva;
 - `intensity`: magnitude normalizada entre 0 e 1 para o mapa de calor;
 - `direction`: `HOTTER`, `COOLER`, `WETTER` ou `DRIER`.
