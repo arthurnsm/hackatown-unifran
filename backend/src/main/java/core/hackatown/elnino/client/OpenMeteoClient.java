@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 public final class OpenMeteoClient {
     private static final String ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive";
+    private static final String FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+    private static final int BATCH_SIZE = 25;
 
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
@@ -32,28 +34,34 @@ public final class OpenMeteoClient {
                 .build();
     }
 
-    private String getApiKey() {
-        String key = System.getenv("API_KEY");
-        if (key != null && !key.isEmpty()) return key;
-
-        String[] paths = {".env", "../.env", "../../.env"};
-        for (String p : paths) {
-            java.nio.file.Path path = java.nio.file.Paths.get(p);
-            if (java.nio.file.Files.exists(path)) {
-                try {
-                    for (String line : java.nio.file.Files.readAllLines(path)) {
-                        if (line.startsWith("API_KEY=")) {
-                            return line.substring("API_KEY=".length()).trim();
-                        }
-                    }
-                } catch (Exception e) {}
-            }
-        }
-        return null;
-    }
-
     public Map<Location, List<DailyWeather>> fetch(
             List<Location> locations, LocalDate start, LocalDate end
+    ) throws IOException, InterruptedException {
+        return fetch(locations, start, end, ARCHIVE_URL, true);
+    }
+
+    public Map<Location, List<DailyWeather>> fetchCurrentPeriod(
+            List<Location> locations, LocalDate start, LocalDate end
+    ) throws IOException, InterruptedException {
+        return fetch(locations, start, end, FORECAST_URL, false);
+    }
+
+    private Map<Location, List<DailyWeather>> fetch(
+            List<Location> locations, LocalDate start, LocalDate end,
+            String baseUrl, boolean useEra5
+    ) throws IOException, InterruptedException {
+        Map<Location, List<DailyWeather>> result = new LinkedHashMap<>();
+        for (int offset = 0; offset < locations.size(); offset += BATCH_SIZE) {
+            int endIndex = Math.min(offset + BATCH_SIZE, locations.size());
+            result.putAll(fetchBatch(
+                    locations.subList(offset, endIndex), start, end, baseUrl, useEra5));
+        }
+        return result;
+    }
+
+    private Map<Location, List<DailyWeather>> fetchBatch(
+            List<Location> locations, LocalDate start, LocalDate end,
+            String baseUrl, boolean useEra5
     ) throws IOException, InterruptedException {
         String latitudes = locations.stream()
                 .map(location -> format(location.latitude()))
@@ -62,34 +70,25 @@ public final class OpenMeteoClient {
                 .map(location -> format(location.longitude()))
                 .collect(Collectors.joining(","));
 
-        String apiKey = getApiKey();
-        String baseUrl = (apiKey != null && !apiKey.isEmpty()) 
-                ? "https://customer-archive-api.open-meteo.com/v1/archive" 
-                : ARCHIVE_URL;
-
         String url = baseUrl
                 + "?latitude=" + latitudes
                 + "&longitude=" + longitudes
                 + "&start_date=" + start
                 + "&end_date=" + end
                 + "&daily=temperature_2m_mean,precipitation_sum"
-                + "&models=era5"
+                + (useEra5 ? "&models=era5" : "")
                 + "&timezone=GMT";
 
-        if (apiKey != null && !apiKey.isEmpty()) {
-            url += "&apikey=" + apiKey;
-        }
-
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-                .timeout(Duration.ofSeconds(45))
+                .timeout(Duration.ofSeconds(120))
                 .header("Accept", "application/json")
                 .header("User-Agent", "Hackatown-El-Nino/1.0")
                 .GET()
                 .build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = sendWithRateLimitRetry(request);
         if (response.statusCode() != 200) {
-            throw new IOException("Open-Meteo respondeu HTTP " + response.statusCode());
+            throw new IOException("Open-Meteo respondeu HTTP " + response.statusCode() + ": " + response.body());
         }
 
         JsonNode root = mapper.readTree(response.body());
@@ -106,6 +105,16 @@ public final class OpenMeteoClient {
             result.put(locations.get(i), parseDaily(responses.get(i)));
         }
         return result;
+    }
+
+    private HttpResponse<String> sendWithRateLimitRetry(HttpRequest request)
+            throws IOException, InterruptedException {
+        for (int attempt = 0; attempt < 2; attempt++) {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 429 || attempt == 1) return response;
+            Thread.sleep(65_000L);
+        }
+        throw new IllegalStateException("Fluxo de repetição inválido");
     }
 
     private List<DailyWeather> parseDaily(JsonNode response) throws IOException {

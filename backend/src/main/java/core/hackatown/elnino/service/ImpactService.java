@@ -1,7 +1,7 @@
 package core.hackatown.elnino.service;
 
 import core.hackatown.elnino.client.OpenMeteoClient;
-import core.hackatown.elnino.config.BrazilLocations;
+import core.hackatown.elnino.config.BrazilGrid;
 import core.hackatown.elnino.model.DailyWeather;
 import core.hackatown.elnino.model.ImpactResponse;
 import core.hackatown.elnino.model.Location;
@@ -11,15 +11,16 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class ImpactService {
-    static final LocalDate EVENT_START = LocalDate.of(2023, 6, 1);
-    static final LocalDate EVENT_END = LocalDate.of(2024, 5, 31);
-    static final LocalDate BASELINE_START = LocalDate.of(2013, 6, 1);
-    static final LocalDate BASELINE_END = LocalDate.of(2023, 5, 31);
-    static final int BASELINE_YEARS = 10;
+    static final int BASELINE_YEARS = 3;
+    static final int PERIOD_DAYS = 7;
+    private static final ZoneId BRAZIL_TIME = ZoneId.of("America/Sao_Paulo");
 
     private final OpenMeteoClient client;
     private final ImpactCalculator calculator;
@@ -31,37 +32,58 @@ public final class ImpactService {
     }
 
     public ImpactResponse getImpacts(Metric metric) throws IOException, InterruptedException {
-        CachedWeather weather = loadWeather();
+        LocalDate today = LocalDate.now(BRAZIL_TIME);
+        LocalDate periodStart = today.minusDays(PERIOD_DAYS - 1L);
+        CachedWeather weather = loadWeather(today);
         return new ImpactResponse(
                 metric.name().toLowerCase(), metric.unit(), metric.description(),
                 new ImpactResponse.PeriodInfo(
-                        EVENT_START + " a " + EVENT_END,
-                        BASELINE_START + " a " + BASELINE_END + " (média de 10 períodos anuais)"
+                        "últimos 7 dias (" + periodStart + " a " + today + ")",
+                        "mesmas janelas em " + historicalYears(today) + " (média de 3 anos)"
                 ),
                 weather.loadedAt().toString(),
-                calculator.calculate(metric, weather.event(), weather.baseline(), BASELINE_YEARS)
+                calculator.calculate(metric, weather.current(), weather.baseline(), BASELINE_YEARS)
         );
     }
 
-    private CachedWeather loadWeather() throws IOException, InterruptedException {
+    private CachedWeather loadWeather(LocalDate today) throws IOException, InterruptedException {
         CachedWeather current = cache;
-        if (current != null && !current.expired()) return current;
+        if (current != null && current.date().equals(today) && !current.expired()) return current;
 
         synchronized (this) {
             current = cache;
-            if (current != null && !current.expired()) return current;
+            if (current != null && current.date().equals(today) && !current.expired()) return current;
 
-            Map<Location, List<DailyWeather>> event = client.fetch(
-                    BrazilLocations.CAPITALS, EVENT_START, EVENT_END);
-            Map<Location, List<DailyWeather>> baseline = client.fetch(
-                    BrazilLocations.CAPITALS, BASELINE_START, BASELINE_END);
-            cache = new CachedWeather(event, baseline, Instant.now());
+            LocalDate periodStart = today.minusDays(PERIOD_DAYS - 1L);
+            Map<Location, List<DailyWeather>> currentPeriod = client.fetchCurrentPeriod(
+                    BrazilGrid.POINTS, periodStart, today);
+            Map<Location, List<DailyWeather>> baseline = new LinkedHashMap<>();
+            for (int yearsAgo = BASELINE_YEARS; yearsAgo >= 1; yearsAgo--) {
+                LocalDate historicalEnd = today.minusYears(yearsAgo);
+                LocalDate historicalStart = historicalEnd.minusDays(PERIOD_DAYS - 1L);
+                merge(baseline, client.fetch(BrazilGrid.POINTS, historicalStart, historicalEnd));
+            }
+            cache = new CachedWeather(today, currentPeriod, baseline, Instant.now());
             return cache;
         }
     }
 
+    private void merge(
+            Map<Location, List<DailyWeather>> destination,
+            Map<Location, List<DailyWeather>> source
+    ) {
+        source.forEach((location, values) -> destination
+                .computeIfAbsent(location, ignored -> new ArrayList<>())
+                .addAll(values));
+    }
+
+    private String historicalYears(LocalDate today) {
+        return (today.getYear() - 3) + ", " + (today.getYear() - 2) + " e " + (today.getYear() - 1);
+    }
+
     private record CachedWeather(
-            Map<Location, List<DailyWeather>> event,
+            LocalDate date,
+            Map<Location, List<DailyWeather>> current,
             Map<Location, List<DailyWeather>> baseline,
             Instant loadedAt
     ) {
