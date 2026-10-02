@@ -1,7 +1,8 @@
 const API_URL = 'http://127.0.0.1:8080/api/impacts';
 const map = L.map('map', {
     zoomControl: false,
-    minZoom: 4,
+    minZoom: 3,
+    zoomSnap: .25,
     maxBounds: [[-46, -88], [18, -20]],
     maxBoundsViscosity: 0.7
 });
@@ -11,7 +12,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 18
 }).addTo(map);
-map.setView([-14.2, -51.9], 4);
+map.setView([-14.2, -51.9], 3.5);
 
 const layerGroup = L.layerGroup().addTo(map);
 let activeMetric = 'temperature';
@@ -48,6 +49,7 @@ function signed(value, digits = 1) {
 
 function placeName(point) {
     if (point.city && point.id) return `${point.city}, ${point.id}`;
+    if (point.city && point.state && point.state.includes('°')) return `${point.city} · ${point.state}`;
     if (point.city && point.state) return `${point.city}, ${point.state}`;
     return point.city || 'Local analisado';
 }
@@ -55,17 +57,37 @@ function placeName(point) {
 function renderMap(points, metric) {
     layerGroup.clearLayers();
     const units = unitsFor(metric);
+    const positive = [];
+    const negative = [];
+
+    points.forEach(point => {
+        const heatPoint = [point.latitude, point.longitude, Math.max(.18, Number(point.intensity || 0))];
+        if (point.direction === 'HOTTER' || point.direction === 'WETTER') positive.push(heatPoint);
+        else negative.push(heatPoint);
+    });
+
+    const positiveGradient = metric === 'temperature'
+        ? { .15: '#f4d9a7', .5: '#ed9a52', 1: '#d9573f' }
+        : { .15: '#c9ded2', .5: '#69aa96', 1: '#1d7167' };
+    const negativeGradient = metric === 'temperature'
+        ? { .15: '#dce7ed', .55: '#77a9c7', 1: '#3977a9' }
+        : { .15: '#f1dfc2', .55: '#dda85e', 1: '#bd7428' };
+
+    const heatOptions = { radius: 65, blur: 45, maxZoom: 7, minOpacity: .34 };
+    if (positive.length) L.heatLayer(positive, { ...heatOptions, gradient: positiveGradient }).addTo(layerGroup);
+    if (negative.length) L.heatLayer(negative, { ...heatOptions, gradient: negativeGradient }).addTo(layerGroup);
 
     points.forEach(point => {
         const color = colorFor(point.direction);
-        const radius = 6 + Math.max(0, Number(point.intensity || 0)) * 17;
+        const clickRadius = 9 + Math.max(0, Number(point.intensity || 0)) * 4;
         const marker = L.circleMarker([point.latitude, point.longitude], {
-            radius,
+            radius: clickRadius,
             fillColor: color,
             color: '#fff',
             weight: 1.5,
-            opacity: 1,
-            fillOpacity: .72
+            opacity: .9,
+            fillOpacity: .42,
+            bubblingMouseEvents: false
         });
 
         marker.bindPopup(`
@@ -73,7 +95,7 @@ function renderMap(points, metric) {
                 <strong style="display:block;font-size:15px;margin-bottom:3px">${placeName(point)}</strong>
                 <span style="color:#66736d;font-size:12px">${directionLabel(point.direction)}</span>
                 <div style="font-size:24px;font-weight:750;color:${color};margin:10px 0">${signed(point.anomaly)}${units.anomaly}</div>
-                <div style="font-size:12px;line-height:1.6">Período: <b>${Number(point.currentValue).toFixed(1)}${units.value}</b><br>Histórico: <b>${Number(point.historicalValue).toFixed(1)}${units.value}</b></div>
+                <div style="font-size:12px;line-height:1.6">Últimos 7 dias: <b>${Number(point.currentValue).toFixed(1)}${units.value}</b><br>Média das mesmas janelas: <b>${Number(point.historicalValue).toFixed(1)}${units.value}</b></div>
             </div>
         `);
         marker.addTo(layerGroup);
@@ -102,8 +124,8 @@ function renderInsights(points, metric) {
         <div class="highlight-value" style="color:${color}">${signed(highlight.anomaly, 2)}${units.anomaly}</div>
         <div class="highlight-direction">${directionLabel(highlight.direction)} que a referência histórica</div>
         <div class="comparison">
-            <div class="stat"><span>No El Niño</span><strong>${Number(highlight.currentValue).toFixed(1)}${units.value}</strong></div>
-            <div class="stat"><span>Média histórica</span><strong>${Number(highlight.historicalValue).toFixed(1)}${units.value}</strong></div>
+            <div class="stat"><span>Últimos 7 dias</span><strong>${Number(highlight.currentValue).toFixed(1)}${units.value}</strong></div>
+            <div class="stat"><span>Janelas anteriores · média</span><strong>${Number(highlight.historicalValue).toFixed(1)}${units.value}</strong></div>
         </div>
     `;
 
@@ -122,9 +144,11 @@ function updateMetricCopy(metric) {
     document.querySelector('[data-metric="rainfall"]').classList.toggle('active', !temperature);
     document.getElementById('map-title').textContent = temperature ? 'Anomalia de temperatura' : 'Anomalia de precipitação';
     document.getElementById('map-description').textContent = temperature
-        ? 'Diferença da temperatura média em relação ao histórico.'
-        : 'Variação percentual da chuva acumulada em relação ao histórico.';
+        ? 'Interpolação de 59 amostras da diferença de temperatura em relação ao histórico.'
+        : 'Interpolação de 59 amostras da variação percentual de chuva.';
     document.getElementById('legend-scale').classList.toggle('rainfall', !temperature);
+    document.getElementById('legend-start').textContent = temperature ? 'Mais frio' : 'Mais seco';
+    document.getElementById('legend-end').textContent = temperature ? 'Mais quente' : 'Mais chuvoso';
 }
 
 function setConnectionStatus(status) {
@@ -136,6 +160,14 @@ function setConnectionStatus(status) {
         : status === 'offline' ? 'Demonstração local' : 'Fonte: Open-Meteo / ERA5';
 }
 
+function updateComparisonCopy(comparison) {
+    if (!comparison) return;
+    document.getElementById('comparison-summary').textContent =
+        `${comparison.event} · comparação com ${comparison.baseline}`;
+    document.getElementById('method-note').textContent =
+        `Referência histórica: ${comparison.baseline}. A comparação mostra uma anomalia climática, não atribuição causal isolada ao El Niño.`;
+}
+
 async function loadData(metric) {
     setConnectionStatus('loading');
     try {
@@ -144,6 +176,7 @@ async function loadData(metric) {
         const data = await response.json();
         if (!Array.isArray(data.points)) throw new Error('Resposta sem pontos geográficos');
         if (metric !== activeMetric) return;
+        updateComparisonCopy(data.comparison);
         renderMap(data.points, metric);
         setConnectionStatus('online');
     } catch (error) {

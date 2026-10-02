@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mapa das anomalias de temperatura e chuva observadas durante o El Niño de 2023–2024.">
+    <meta name="description" content="Mapa da temperatura e chuva dos últimos sete dias em comparação com as mesmas janelas dos três anos anteriores.">
     <title>Impactos do El Niño no Brasil</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <link rel="stylesheet" href="styles.css">
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
     <script defer src="app.js"></script>
 </head>
 <body>
@@ -15,7 +16,7 @@
     <header class="topbar">
         <div class="brand">
             <h1>Impactos do El Niño no Brasil</h1>
-            <p>Comparação histórica · junho de 2023 a maio de 2024</p>
+            <p id="comparison-summary">Últimos 7 dias · comparação com as mesmas janelas dos 3 anos anteriores</p>
         </div>
 
         <div class="metric-toggle" aria-label="Métrica exibida">
@@ -40,8 +41,8 @@
 
             <div class="map-legend">
                 <div class="legend-labels">
-                    <span>Menor impacto</span>
-                    <span>Maior impacto</span>
+                    <span id="legend-start">Mais frio</span>
+                    <span id="legend-end">Mais quente</span>
                 </div>
                 <div class="legend-scale" id="legend-scale"></div>
             </div>
@@ -56,13 +57,13 @@
             <section class="panel">
                 <div class="panel-heading">
                     <h2>Outros destaques</h2>
-                    <span>capitais brasileiras</span>
+                    <span>amostras nacionais</span>
                 </div>
                 <div class="ranking-list" id="ranking-list"></div>
             </section>
 
-            <div class="method-note">
-                Os valores mostram anomalias observadas durante o período analisado. A comparação não representa atribuição causal isolada ao El Niño.
+            <div class="method-note" id="method-note">
+                Referência histórica: média das mesmas janelas de sete dias nos três anos anteriores. A comparação mostra uma anomalia climática, não atribuição causal isolada ao El Niño.
             </div>
         </aside>
     </main>

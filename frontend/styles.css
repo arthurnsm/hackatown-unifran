@@ -187,10 +187,10 @@ button { font: inherit; }
 .legend-scale {
     height: 8px;
     border-radius: 999px;
-    background: linear-gradient(90deg, #f4d9a7, #ed9a52, var(--hot));
+    background: linear-gradient(90deg, var(--cold), #eee4bf, var(--hot));
 }
 
-.legend-scale.rainfall { background: linear-gradient(90deg, #efc68f, #8bb6a5, var(--wet)); }
+.legend-scale.rainfall { background: linear-gradient(90deg, var(--dry), #e8e3c8, var(--wet)); }
 
 .insights {
     min-height: 0;

@@ -1,6 +1,6 @@
 # Mapa de impactos do El Niño
 
-Backend Java simples para um mapa de calor do Brasil. Ele compara o El Niño de junho de 2023 a maio de 2024 com a média dos dez períodos anuais anteriores, usando dados históricos da Open-Meteo.
+Backend Java simples para um mapa de calor do Brasil. Ele compara a temperatura média e a chuva acumulada nos últimos sete dias com a média das mesmas janelas nos três anos anteriores, usando dados da Open-Meteo.
 
 As séries usam o modelo de reanálise ERA5, para que temperatura e precipitação mantenham a mesma fonte em todo o período.
 
@@ -13,7 +13,7 @@ Não há banco de dados nem persistência. A resposta da Open-Meteo fica somente
 - `view`: serialização dos modelos e erros para JSON;
 - `service`: cálculo dos impactos e cache em memória;
 - `client`: comunicação com a Open-Meteo;
-- `config`: lista dos pontos geográficos das capitais.
+- `config`: grade de amostragem distribuída pelo território brasileiro.
 
 ## Requisitos
 
@@ -42,8 +42,8 @@ O frontend pode trocar apenas o valor de `metric` quando o usuário clicar no to
 Cada ponto contém:
 
 - `latitude` e `longitude`: posição no mapa;
-- `currentValue`: valor no período do El Niño;
-- `historicalValue`: média histórica usada na comparação;
+- `currentValue`: temperatura média ou chuva acumulada nos últimos sete dias;
+- `historicalValue`: média das mesmas janelas nos três anos anteriores;
 - `anomaly`: diferença em °C ou em porcentagem de chuva;
 - `intensity`: magnitude normalizada entre 0 e 1 para o mapa de calor;
 - `direction`: `HOTTER`, `COOLER`, `WETTER` ou `DRIER`.
@@ -66,6 +66,6 @@ carregarMapa("temperature");
 
 - Temperatura: média diária no evento menos a média diária da linha de base.
 - Chuva: precipitação acumulada no evento comparada à precipitação anual média da linha de base.
-- Intensidade: valor absoluto da anomalia dividido pela maior anomalia entre as 27 capitais.
+- Intensidade: valor absoluto da anomalia dividido pela maior anomalia entre as 59 amostras nacionais.
 
-Os valores representam associação temporal e anomalias durante o período, não provam causalidade isolada do El Niño.
+Os valores representam anomalias da data atual e não provam causalidade isolada do El Niño.
