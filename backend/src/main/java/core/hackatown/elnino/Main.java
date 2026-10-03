@@ -51,6 +51,6 @@ public final class Main {
         System.out.println("API El Niño rodando em http://localhost:" + port);
         System.out.println("Temperatura: /api/impacts?metric=temperature");
         System.out.println("Chuva:       /api/impacts?metric=rainfall");
-        System.out.println("Alertas meteorológicos: verificação agendada a cada 10 segundos para teste.");
+        System.out.println("Alertas meteorológicos: verificação diária agendada.");
     }
 }

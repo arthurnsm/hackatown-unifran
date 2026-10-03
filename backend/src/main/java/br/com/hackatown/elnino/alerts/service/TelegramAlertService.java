@@ -12,9 +12,8 @@ public class TelegramAlertService {
 
     public AlertResponse send(AlertRequest request) {
         validate(request);
-        String message = String.format(
-                "%s ALERT: flood risk in %s. Avoid flooded areas and seek a safe location.",
-                request.getRiskLevel().toUpperCase(), request.getLocation());
+        String message = "⚠️ Alerta climático para " + request.getLocation() + "\n"
+                + request.getRiskLevel();
         String chatId = validateChatId(request.getChatId());
         String messageId = telegramBotClient.send(chatId, message);
         return new AlertResponse(chatId, message, messageId);

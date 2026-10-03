@@ -21,15 +21,24 @@ public final class DailyWeatherAlertService {
         this.weatherClient = weatherClient;
         this.telegram = telegram;
         this.subscribers = subscribers;
-        this.heavyRainMm = 30; this.extremeHeatC = 35;
+        this.heavyRainMm = 30;
+        this.extremeHeatC = 35;
     }
 
     public List<AlertResponse> checkTomorrow() throws IOException, InterruptedException {
         List<AlertResponse> sent = new ArrayList<>();
         for (AlertSubscriber subscriber : subscribers.findAll()) {
             ForecastDay forecast = weatherClient.fetchTomorrowForecast(subscriber.toLocation()); String place = subscriber.city() + ", " + subscriber.state();
-            if (forecast.precipitationSum() >= heavyRainMm) sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place, "Hoje terá chuvas fortes (" + forecast.precipitationSum() + " mm).")));
-            if (forecast.meanTemperature() >= extremeHeatC) sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place, "A temperatura média prevista é de " + forecast.meanTemperature() + " °C.")));
+            if (forecast.precipitationSum() >= heavyRainMm) {
+                sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place,
+                        "🌧️ Chuva forte prevista para amanhã: " + forecast.precipitationSum()
+                                + " mm. Evite áreas com risco de alagamento.")));
+            }
+            if (forecast.meanTemperature() >= extremeHeatC) {
+                sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place,
+                        "☀️ Calor extremo previsto para amanhã: temperatura média de "
+                                + forecast.meanTemperature() + " °C. Hidrate-se e evite o sol intenso.")));
+            }
         }
         return List.copyOf(sent);
     }

@@ -23,7 +23,7 @@ public final class DailyWeatherAlertScheduler {
             var sentAlerts = alertService.checkTomorrow();
             System.out.println("Weather alert check completed. Alerts sent: " + sentAlerts.size());
         } catch (Exception exception) {
-            System.err.println("Daily weather check failed: " + exception.getMessage());
+            System.err.println("Weather alert check failed: " + exception.getMessage());
         }
     }
 }
