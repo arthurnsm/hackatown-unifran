@@ -187,10 +187,10 @@ button { font: inherit; }
 .legend-scale {
     height: 8px;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--cold), #eee4bf, var(--hot));
+    background: linear-gradient(90deg, #f4d9a7, #ed9a52, var(--hot));
 }
 
-.legend-scale.rainfall { background: linear-gradient(90deg, var(--dry), #e8e3c8, var(--wet)); }
+.legend-scale.rainfall { background: linear-gradient(90deg, #efc68f, #8bb6a5, var(--wet)); }
 
 .insights {
     min-height: 0;
@@ -298,6 +298,56 @@ button { font: inherit; }
 }
 
 .loading-copy { color: var(--muted); font-size: 13px; }
+
+.alert-signup h2 { margin: 0 0 8px; font-size: 20px; }
+
+.alert-signup > p:not(.eyebrow) {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.telegram-link { color: var(--green); font-weight: 700; }
+
+.alert-signup form { display: grid; gap: 10px; }
+
+.alert-signup label {
+    display: grid;
+    gap: 5px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.alert-signup input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+}
+
+.coordinate-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.signup-button {
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--green);
+    color: var(--white);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.signup-button:disabled { opacity: .65; cursor: wait; }
+
+.signup-status { min-height: 18px; margin: 0; color: var(--muted); font-size: 12px; }
+.signup-status.success { color: #16734e; }
+.signup-status.error { color: #ae3b31; }
 
 @media (max-width: 980px) {
     .topbar { grid-template-columns: 1fr auto; padding: 18px 20px; }
