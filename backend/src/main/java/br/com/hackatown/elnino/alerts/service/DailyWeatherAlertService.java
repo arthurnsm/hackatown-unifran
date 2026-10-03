@@ -5,7 +5,6 @@ import br.com.hackatown.elnino.alerts.model.AlertResponse;
 import br.com.hackatown.elnino.alerts.model.AlertSubscriber;
 import core.hackatown.elnino.client.OpenMeteoClient;
 import core.hackatown.elnino.model.ForecastDay;
-import core.hackatown.elnino.model.Location;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,7 @@ public final class DailyWeatherAlertService {
         this.weatherClient = weatherClient;
         this.telegram = telegram;
         this.subscribers = subscribers;
-        this.heavyRainMm = 30; this.extremeHeatC = 20;
+        this.heavyRainMm = 30; this.extremeHeatC = 35;
     }
 
     public List<AlertResponse> checkTomorrow() throws IOException, InterruptedException {
@@ -30,7 +29,7 @@ public final class DailyWeatherAlertService {
         for (AlertSubscriber subscriber : subscribers.findAll()) {
             ForecastDay forecast = weatherClient.fetchTomorrowForecast(subscriber.toLocation()); String place = subscriber.city() + ", " + subscriber.state();
             if (forecast.precipitationSum() >= heavyRainMm) sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place, "Hoje terá chuvas fortes (" + forecast.precipitationSum() + " mm).")));
-            if (forecast.maximumTemperature() >= extremeHeatC) sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place, "Hoje terá calor extremo (" + forecast.maximumTemperature() + " °C).")));
+            if (forecast.meanTemperature() >= extremeHeatC) sent.add(telegram.send(new AlertRequest(subscriber.chatId(), place, "A temperatura média prevista é de " + forecast.meanTemperature() + " °C.")));
         }
         return List.copyOf(sent);
     }

@@ -121,16 +121,16 @@ public final class OpenMeteoClient {
     public ForecastDay fetchTomorrowForecast(Location location) throws IOException, InterruptedException {
         String url = FORECAST_URL + "?latitude=" + format(location.latitude())
                 + "&longitude=" + format(location.longitude())
-                + "&daily=temperature_2m_max,precipitation_sum&forecast_days=2&timezone=America%2FSao_Paulo";
+                + "&daily=temperature_2m_mean,precipitation_sum&forecast_days=2&timezone=America%2FSao_Paulo";
         HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder(URI.create(url))
                 .timeout(Duration.ofSeconds(20)).header("Accept", "application/json").GET().build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200) throw new IOException("Open-Meteo forecast respondeu HTTP " + response.statusCode());
         JsonNode daily = mapper.readTree(response.body()).path("daily");
-        if (daily.path("time").size() < 2 || daily.path("temperature_2m_max").size() < 2 || daily.path("precipitation_sum").size() < 2) {
+        if (daily.path("time").size() < 2 || daily.path("temperature_2m_mean").size() < 2 || daily.path("precipitation_sum").size() < 2) {
             throw new IOException("Open-Meteo não retornou a previsão de amanhã");
         }
         return new ForecastDay(LocalDate.parse(daily.path("time").get(1).asText()),
-                daily.path("temperature_2m_max").get(1).asDouble(), daily.path("precipitation_sum").get(1).asDouble());
+                daily.path("temperature_2m_mean").get(1).asDouble(), daily.path("precipitation_sum").get(1).asDouble());
     }
 
     private List<DailyWeather> parseDaily(JsonNode response) throws IOException {

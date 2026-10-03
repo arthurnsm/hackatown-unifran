@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import br.com.hackatown.elnino.alerts.model.AlertResponse;
 
-/** Runs the forecast check every 10 seconds while the alert flow is being tested. */
+/** Runs the forecast check once a day. */
 public final class DailyWeatherAlertScheduler {
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     private final DailyWeatherAlertService alertService;
@@ -15,7 +15,7 @@ public final class DailyWeatherAlertScheduler {
     }
 
     public void start() {
-        executor.scheduleAtFixedRate(this::checkSafely, 0, 10, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::checkSafely, 0, 1, TimeUnit.DAYS);
     }
 
     private void checkSafely() {
